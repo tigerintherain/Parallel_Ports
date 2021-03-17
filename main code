@@ -1,0 +1,112 @@
+//START PROJECT
+#include "device_config.h"
+#include <stdlib.h>
+#include <stdio.h>      /* printf, scanf, puts, NULL */
+#include <math.h>
+#include <time.h> 
+
+//DIRECTIVES
+#define ONE_SECOND 100
+#define _XTAL_FREQ 1000000
+#define DELAY_SWEEP 1000
+//DATA TYPES
+enum exponent{bbase = 2, limit = 8};
+enum por_dir {output, input}; // output=0, input=1
+enum por_ACDC{digital,analog};// digital=0, analog=1
+enum resistor_state {set_ON,res_ON};//set_ON=0,resON =1
+enum led_state {led_OFF, led_ON};// led_OFF, led_ON=1
+enum button_state {pushed,no_pushed};//pushed=0, no_pushed=1
+//ISR for high-priority
+void __interrupt(high_priority) high_isr (void);
+//ISR for low-priority
+void __interrupt (low_priority) low_isr (void);
+//FUNCTIONS DECLARATIONS
+void portsInit(void);
+typedef enum { F, T } boolean; 
+
+
+
+//MAIN SECTION
+void main(void) {
+    //DECLARAR VARIABLES 
+    portsInit(); //Debe ir antes de iniciar el ciclo 'while' para incializar los puertos correctamente
+    char posicion_led;
+    char boton_status;
+    //CONFIGURATIONS
+    while(1){
+        //RANDOMIZE VARIABLE
+        int numero = rand() %8; //Creamos variable random para determinar que LED encender
+        //CREATE CASES
+        switch(numero){         //Función para asignar la posición de LED por encender
+            case 0:
+                LATA = 0x01;
+                posicion_led=0x01;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 1:
+                LATA = 0x02;
+                posicion_led=0x02;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 2:
+                LATA = 0x04; 
+                posicion_led=0x04;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 3:
+                LATA = 0x08;
+                posicion_led=0x08;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 4:
+                LATA = 0x10;
+                posicion_led=0x10;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 5:
+                LATA = 0x20; 
+                posicion_led=0x20;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 6:
+                LATA = 0x40;
+                posicion_led=0x40;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+            case 7:
+                LATA = 0x80;
+                posicion_led=0x80;
+                __delay_ms (DELAY_SWEEP); //DELAY FUNCION XC8 compiler
+                break;
+        }
+       boton_status = ~PORTD;
+        //posicion_led = LATA;
+       
+        if (posicion_led == boton_status){
+            for (int x=0;x<8;x++){
+        //TRISAbits.RA0=led_ON;
+        LATA = pow(2, x); // 2^0=1, 2, 4, 8, 16... 
+        __delay_ms (ONE_SECOND);
+        //TRISAbits.TRISAx=led_OFF;;
+            }
+            for (int x=7;x>=0;x--){
+                //TRISAbits.TRISBx=led_ON;
+                LATA = pow(2, x); // 2^0=1, 2, 4, 8, 16... 
+                __delay_ms (ONE_SECOND);
+                //TRISAbits.TRISBx=led_OFF;;
+            }
+        }
+                // LATA = posicion_led;
+    }
+}    
+
+
+//PSEUDO CÓDIGO
+void portsInit (void){//ports configuration
+    //DECLARAR PUERTOS DIGITALES
+    ANSELA = digital;
+    ANSELD = digital;
+    //DECLARAR LEDS 
+    TRISA=0x00; //
+    TRISD=0xFF; //
+}
